@@ -29,8 +29,16 @@ LOG = logging.getLogger("feedhandler")
 
 class OKX(Feed, OKXRestMixin):
     id = OKX_str
-    valid_candle_intervals = {'1M', '1W', '1D', '12H', '6H', '4H', '2H', '1H', '30m', '15m', '5m', '3m', '1m'}
-    candle_interval_map = {'1M': 2630000, '1W': 604800, '1D': 86400, '12H': 43200, '6H': 21600, '4H': 14400, '2H': 7200, '1H': 3600, '30m': 1800, '15m': 900, '5m': 300, '3m': 180, '1m': 60}
+    valid_candle_intervals = {'3M', '1M', '1W', '1D', '2D', '3D', '5D', '12H', '6H', '4H', '2H', '1H', '30m', '15m', '5m', '3m', '1m', '1s', '3Mutc', '1Mutc', '1Wutc', '1Dutc', '2Dutc', '3Dutc', '5Dutc', '12Hutc', '6Hutc'}
+    candle_interval_map = {
+        '3M': 7890000, '1M': 2630000, '1W': 604800,
+        '1D': 86400, '2D': 172800, '3D': 259200, '5D': 432000,
+        '12H': 43200, '6H': 21600, '4H': 14400, '2H': 7200, '1H': 3600,
+        '30m': 1800, '15m': 900, '5m': 300, '3m': 180, '1m': 60, '1s': 1,
+        '3Mutc': 7890000, '1Mutc': 2630000, '1Wutc': 604800,
+        '1Dutc': 86400, '2Dutc': 172800, '3Dutc': 259200, '5Dutc': 432000,
+        '12Hutc': 43200, '6Hutc': 21600
+    }
     websocket_channels = {
         L2_BOOK: 'books',
         TRADES: 'trades',
@@ -42,7 +50,8 @@ class OKX(Feed, OKXRestMixin):
         CANDLES: 'candle'
     }
     websocket_endpoints = [
-        WebsocketEndpoint('wss://ws.okx.com:8443/ws/v5/public', channel_filter=(websocket_channels[L2_BOOK], websocket_channels[TRADES], websocket_channels[TICKER], websocket_channels[FUNDING], websocket_channels[OPEN_INTEREST], websocket_channels[LIQUIDATIONS], websocket_channels[CANDLES]), options={'compression': None}),
+        WebsocketEndpoint('wss://ws.okx.com:8443/ws/v5/public', channel_filter=(websocket_channels[L2_BOOK], websocket_channels[TRADES], websocket_channels[TICKER], websocket_channels[FUNDING], websocket_channels[OPEN_INTEREST], websocket_channels[LIQUIDATIONS]), options={'compression': None}),
+        WebsocketEndpoint('wss://ws.okx.com:8443/ws/v5/business', channel_filter=(websocket_channels[CANDLES],), options={'compression': None}),
         WebsocketEndpoint('wss://ws.okx.com:8443/ws/v5/private', channel_filter=(websocket_channels[ORDER_INFO],), options={'compression': None}),
     ]
     rest_endpoints = [RestEndpoint('https://www.okx.com', routes=Routes(['/api/v5/public/instruments?instType=SPOT', '/api/v5/public/instruments?instType=SWAP', '/api/v5/public/instruments?instType=FUTURES', '/api/v5/public/instruments?instType=OPTION&uly=BTC-USD', '/api/v5/public/instruments?instType=OPTION&uly=ETH-USD'], liquidations='/api/v5/public/liquidation-orders?instType={}&limit=100&state={}&uly={}'))]
